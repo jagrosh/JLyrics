@@ -23,6 +23,9 @@ import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.XML;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Document.OutputSettings;
@@ -45,12 +48,22 @@ public class LyricsClient
     
     public LyricsClient()
     {
-        this(null);
+        this(null, null);
+    }
+    
+    public LyricsClient(String defaultSource)
+    {
+        this(defaultSource, null);
     }
     
     public LyricsClient(Executor executor)
     {
-        this.defaultSource = config.getString("lyrics.default");
+        this(null, executor);
+    }
+    
+    public LyricsClient(String defaultSource, Executor executor)
+    {
+        this.defaultSource = defaultSource == null ? config.getString("lyrics.default") : defaultSource;
         this.userAgent = config.getString("lyrics.user-agent");
         this.timeout = config.getInt("lyrics.timeout");
         this.executor = executor == null ? Executors.newCachedThreadPool() : executor;
@@ -69,6 +82,7 @@ public class LyricsClient
         try
         {
             String searchUrl = String.format(config.getString("lyrics." + source + ".search"), search);
+            boolean jsonSearch = config.getBoolean("lyrics." + source + ".json-search");
             String select = config.getString("lyrics." + source + ".select");
             String titleSelector = config.getString("lyrics." + source + ".title");
             String authorSelector = config.getString("lyrics." + source + ".author");
@@ -77,19 +91,33 @@ public class LyricsClient
             {
                 try
                 {
-                    Document doc = Jsoup.connect(searchUrl).userAgent(userAgent).timeout(timeout).get();
-                    String url = doc.selectFirst(select).attr("abs:href");
-                    if(url==null)
+                    Document doc;
+                    if(jsonSearch)
+                    {
+                        String body = Jsoup.connect(searchUrl).timeout(timeout).ignoreContentType(true).execute().body();
+                        JSONObject json = new JSONObject(body);
+                        doc = Jsoup.parse(XML.toString(json));
+                    }
+                    else
+                        doc = Jsoup.connect(searchUrl).userAgent(userAgent).timeout(timeout).get();
+                    Element urlElement = doc.selectFirst(select);
+                    String url;
+                    if(jsonSearch)
+                        url = urlElement.text();
+                    else
+                        url = urlElement.attr("abs:href");
+                    if(url==null || url.isEmpty())
                         return null;
                     doc = Jsoup.connect(url).userAgent(userAgent).timeout(timeout).get();
                     Lyrics lyrics = new Lyrics(doc.selectFirst(titleSelector).text(), 
                             doc.selectFirst(authorSelector).text(), 
-                            cleanWithNewlines(doc.selectFirst(contentSelector)), 
+                            cleanWithNewlines(doc.selectFirst(contentSelector)),
+                            url,
                             source);
                     cache.put(cacheKey, lyrics);
                     return lyrics;
                 }
-                catch(IOException | NullPointerException ex)
+                catch(IOException | NullPointerException | JSONException ex)
                 {
                     return null;
                 }
@@ -112,13 +140,14 @@ public class LyricsClient
     
     public class Lyrics
     {
-        private final String title, author, content, source;
+        private final String title, author, content, url, source;
         
-        private Lyrics(String title, String author, String content, String source)
+        private Lyrics(String title, String author, String content, String url, String source)
         {
             this.title = title;
             this.author = author;
             this.content = content;
+            this.url = url;
             this.source = source;
         }
         
@@ -135,6 +164,11 @@ public class LyricsClient
         public String getContent()
         {
             return content;
+        }
+        
+        public String getURL()
+        {
+            return url;
         }
         
         public String getSource()

@@ -29,16 +29,47 @@ import static org.junit.Assert.*;
 public class LyricsTest
 {
     @Test
-    public void configurationTests()
+    public void configurationTest()
     {
         Config config = ConfigFactory.load();
         assertNotNull(config);
     }
     
-    @Test
-    public void azlyricsTests() throws InterruptedException, ExecutionException
+    @Test(expected = IllegalArgumentException.class)
+    public void invalidSource() throws InterruptedException, ExecutionException
     {
         LyricsClient client = new LyricsClient();
+        
+        Lyrics ignored = client.getLyrics("smooth criminal", "Source not in config anywhere").get();
+    }
+    
+    @Test
+    public void azlyricsTest() throws InterruptedException, ExecutionException
+    {
+        LyricsClient client = new LyricsClient("A-Z Lyrics");
+        
+        Lyrics lyrics = client.getLyrics("ellie goulding lights").get();
+        assertNotNull(lyrics);
+        assertNotNull(lyrics.getTitle());
+        assertNotNull(lyrics.getAuthor());
+        assertNotNull(lyrics.getContent());
+        assertNotNull(lyrics.getSource());
+        
+        lyrics = client.getLyrics("jklsjdgv89y32hr9").get();
+        assertNull(lyrics);
+        
+        lyrics = client.getLyrics("smooth criminal").get();
+        assertNotNull(lyrics);
+        assertNotNull(lyrics.getTitle());
+        assertNotNull(lyrics.getAuthor());
+        assertNotNull(lyrics.getContent());
+        assertNotNull(lyrics.getSource());
+    }
+    
+    @Test
+    public void geniusTest() throws InterruptedException, ExecutionException
+    {
+        LyricsClient client = new LyricsClient("Genius");
         
         Lyrics lyrics = client.getLyrics("ellie goulding lights").get();
         assertNotNull(lyrics);
