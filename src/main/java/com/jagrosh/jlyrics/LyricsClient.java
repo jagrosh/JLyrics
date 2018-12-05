@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Document.OutputSettings;
@@ -132,14 +133,16 @@ public class LyricsClient
                 try
                 {
                     Document doc;
+                    Connection connection = Jsoup.connect(searchUrl).userAgent(userAgent).timeout(timeout);
                     if(jsonSearch)
                     {
-                        String body = Jsoup.connect(searchUrl).timeout(timeout).ignoreContentType(true).execute().body();
+                        String body = connection.ignoreContentType(true).execute().body();
                         JSONObject json = new JSONObject(body);
                         doc = Jsoup.parse(XML.toString(json));
                     }
                     else
-                        doc = Jsoup.connect(searchUrl).userAgent(userAgent).timeout(timeout).get();
+                        doc = connection.get();
+                    
                     Element urlElement = doc.selectFirst(select);
                     String url;
                     if(jsonSearch)
