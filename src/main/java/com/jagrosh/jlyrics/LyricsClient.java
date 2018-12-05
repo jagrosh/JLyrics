@@ -152,8 +152,8 @@ public class LyricsClient
                     if(url==null || url.isEmpty())
                         return null;
                     doc = Jsoup.connect(url).userAgent(userAgent).timeout(timeout).get();
-                    Lyrics lyrics = new Lyrics(doc.selectFirst(titleSelector).text(), 
-                            doc.selectFirst(authorSelector).text(), 
+                    Lyrics lyrics = new Lyrics(doc.selectFirst(titleSelector).ownText(), 
+                            doc.selectFirst(authorSelector).ownText(), 
                             cleanWithNewlines(doc.selectFirst(contentSelector)),
                             url,
                             source);
