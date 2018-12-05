@@ -81,12 +81,12 @@ public class LyricsClient
             return CompletableFuture.completedFuture(cache.get(cacheKey));
         try
         {
-            String searchUrl = String.format(config.getString("lyrics." + source + ".search"), search);
-            boolean jsonSearch = config.getBoolean("lyrics." + source + ".json-search");
-            String select = config.getString("lyrics." + source + ".select");
-            String titleSelector = config.getString("lyrics." + source + ".title");
-            String authorSelector = config.getString("lyrics." + source + ".author");
-            String contentSelector = config.getString("lyrics." + source + ".content");
+            String searchUrl = String.format(config.getString("lyrics." + source + ".search.url"), search);
+            boolean jsonSearch = config.getBoolean("lyrics." + source + ".search.json");
+            String select = config.getString("lyrics." + source + ".search.select");
+            String titleSelector = config.getString("lyrics." + source + ".parse.title");
+            String authorSelector = config.getString("lyrics." + source + ".parse.author");
+            String contentSelector = config.getString("lyrics." + source + ".parse.content");
             return CompletableFuture.supplyAsync(() -> 
             {
                 try
