@@ -46,21 +46,44 @@ public class LyricsClient
     private final String defaultSource, userAgent;
     private final int timeout;
     
+    /**
+     * Constructs a new {@link LyricsClient} using all defaults
+     */
     public LyricsClient()
     {
         this(null, null);
     }
     
+    /**
+     * Constructs a new {@link LyricsClient}, specifying the default source
+     * for lyrics
+     * 
+     * @param defaultSource the default source for lyrics
+     */
     public LyricsClient(String defaultSource)
     {
         this(defaultSource, null);
     }
     
+    /**
+     * Constructs a new {@link LyricsClient}, specifying an {@link Executor}
+     * to be used for making {@link CompletableFuture}s
+     * 
+     * @param executor the executor to use internally
+     */
     public LyricsClient(Executor executor)
     {
         this(null, executor);
     }
     
+    /**
+     * Constructs a new {@link LyricsClient}, specifying the default source
+     * for lyrics as well as an {@link Executor} to be used for making 
+     * {@link CompletableFuture}s
+     * 
+     * @param defaultSource the default source for lyrics
+     * @param executor the executor to use internally
+     */
     public LyricsClient(String defaultSource, Executor executor)
     {
         this.defaultSource = defaultSource == null ? config.getString("lyrics.default") : defaultSource;
@@ -69,11 +92,28 @@ public class LyricsClient
         this.executor = executor == null ? Executors.newCachedThreadPool() : executor;
     }
     
+    /**
+     * Gets the lyrics for the provided search from the default source. To get lyrics
+     * asynchronously, call {@link CompletableFuture#thenAccept(java.util.function.Consumer)}.
+     * To block and return lyrics, use {@link CompletableFuture#get()}.
+     * 
+     * @param search the song info to search for
+     * @return a {@link CompletableFuture} to access the lyrics. The Lyrics object may be null if no lyrics were found.
+     */
     public CompletableFuture<Lyrics> getLyrics(String search)
     {
         return getLyrics(search, defaultSource);
     }
     
+    /**
+     * Gets the lyrics for the provided search from the provided source. To get lyrics
+     * asynchronously, call {@link CompletableFuture#thenAccept(java.util.function.Consumer)}.
+     * To block and return lyrics, use {@link CompletableFuture#get()}.
+     * 
+     * @param search the song info to search for
+     * @param source the source to use (must be defined in config)
+     * @return a {@link CompletableFuture} to access the lyrics. The Lyrics object may be null if no lyrics were found.
+     */
     public CompletableFuture<Lyrics> getLyrics(String search, String source)
     {
         String cacheKey = source + "||" + search;
@@ -138,6 +178,9 @@ public class LyricsClient
         return Jsoup.clean(Jsoup.clean(element.html(), newlineWhitelist), "", Whitelist.none(), noPrettyPrint);
     }
     
+    /**
+     * Lyrics for some song
+     */
     public class Lyrics
     {
         private final String title, author, content, url, source;
@@ -151,26 +194,51 @@ public class LyricsClient
             this.source = source;
         }
         
+        /**
+         * The title of the song
+         * 
+         * @return the title of the song
+         */
         public String getTitle()
         {
             return title;
         }
         
+        /**
+         * The author/artist of the song
+         * 
+         * @return the author/artist of the song
+         */
         public String getAuthor()
         {
             return author;
         }
         
+        /**
+         * The content of the lyrics
+         * 
+         * @return the lyrics
+         */
         public String getContent()
         {
             return content;
         }
         
+        /**
+         * The URL the lyrics can be found at
+         * 
+         * @return the URL the lyrics can be found at
+         */
         public String getURL()
         {
             return url;
         }
         
+        /**
+         * The source that was used to find these lyrics
+         * 
+         * @return the source that was used to find these lyrics
+         */
         public String getSource()
         {
             return source;
