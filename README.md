@@ -9,7 +9,7 @@
 ## Example
 ```java
 LyricsClient client = new LyricsClient();
-Lyrics lyrics = client.getLyrics("smooth criminal").get()
+Lyrics lyrics = client.getLyrics("smooth criminal").get();
 System.out.println(lyrics.getContent()); // As he came into the window ...
 ```
 
@@ -22,7 +22,7 @@ System.out.println(lyrics.getContent()); // As he came into the window ...
 ## Included Lyrics Sites
   * A-Z Lyrics
   * Genius
-  * MusicMatch
+  * MusixMatch
   * [your contribution here]
 
 ## Maven Setup

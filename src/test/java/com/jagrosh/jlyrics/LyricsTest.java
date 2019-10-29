@@ -89,9 +89,9 @@ public class LyricsTest
     }
     
     @Test
-    public void musicmatchTest() throws InterruptedException, ExecutionException
+    public void musixmatchTest() throws InterruptedException, ExecutionException
     {
-        LyricsClient client = new LyricsClient("MusicMatch");
+        LyricsClient client = new LyricsClient("MusixMatch");
         
         Lyrics lyrics = client.getLyrics("ellie goulding lights").get();
         assertNotNull(lyrics);
@@ -109,5 +109,16 @@ public class LyricsTest
         assertNotNull(lyrics.getAuthor());
         assertNotNull(lyrics.getContent());
         assertNotNull(lyrics.getSource());
+    }
+    
+    @Test
+    public void musicmatchTest() throws InterruptedException, ExecutionException
+    {
+        LyricsClient client = new LyricsClient("MusicMatch");
+        
+        Lyrics lyrics = client.getLyrics("smooth criminal").get();
+        lyrics = client.getLyrics("smooth criminal").get();
+        assertNotNull(lyrics);
+        assertNotNull(lyrics.getTitle());
     }
 }
