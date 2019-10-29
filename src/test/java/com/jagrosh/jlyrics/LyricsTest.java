@@ -117,8 +117,30 @@ public class LyricsTest
         LyricsClient client = new LyricsClient("MusicMatch");
         
         Lyrics lyrics = client.getLyrics("smooth criminal").get();
+        assertNotNull(lyrics);
+        assertNotNull(lyrics.getTitle());
+    }
+    
+    @Test
+    public void lyricsfreakTest() throws InterruptedException, ExecutionException
+    {
+        LyricsClient client = new LyricsClient("LyricsFreak");
+        
+        Lyrics lyrics = client.getLyrics("ellie goulding lights").get();
+        assertNotNull(lyrics);
+        assertNotNull(lyrics.getTitle());
+        assertNotNull(lyrics.getAuthor());
+        assertNotNull(lyrics.getContent());
+        assertNotNull(lyrics.getSource());
+        
+        lyrics = client.getLyrics("jklsjdgv89y32hr9").get();
+        assertNull(lyrics);
+        
         lyrics = client.getLyrics("smooth criminal").get();
         assertNotNull(lyrics);
         assertNotNull(lyrics.getTitle());
+        assertNotNull(lyrics.getAuthor());
+        assertNotNull(lyrics.getContent());
+        assertNotNull(lyrics.getSource());
     }
 }
