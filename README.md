@@ -29,9 +29,9 @@ System.out.println(lyrics.getContent()); // As he came into the window ...
 ## Maven Setup
 ```xml
 <repository>
-    <id>bintray-jagrosh-maven</id>
+    <id>central</id>
     <name>bintray</name>
-    <url>https://dl.bintray.com/jagrosh/maven</url>
+    <url>http://jcenter.bintray.com</url>
 </repository>
 ```
 
