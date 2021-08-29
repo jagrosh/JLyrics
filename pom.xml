@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.jagrosh</groupId>
     <artifactId>JLyrics</artifactId>
-    <version>0.4</version>
+    <version>0.5</version>
     <packaging>jar</packaging>
     
     <dependencies>
@@ -67,9 +67,9 @@
     
     <distributionManagement>
         <repository>
-            <id>bintray-jagrosh-maven</id>
-            <name>jagrosh-maven</name>
-            <url>https://api.bintray.com/maven/jagrosh/maven/JLyrics/;publish=1</url>
+            <id>github</id>
+            <name>GitHub jagrosh Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/jagrosh/JLyrics</url>
         </repository>
     </distributionManagement>
 
