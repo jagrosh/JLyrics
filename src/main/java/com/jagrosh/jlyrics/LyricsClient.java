@@ -150,8 +150,8 @@ public class LyricsClient
                     if(url==null || url.isEmpty())
                         return null;
                     doc = Jsoup.connect(url).userAgent(userAgent).timeout(timeout).get();
-                    Lyrics lyrics = new Lyrics(parseAlternatives("title", source, doc),
-                            parseAlternatives("author", source, doc),
+                    Lyrics lyrics = new Lyrics(parseAlternatives("title", source, doc).ownText(),
+                            parseAlternatives("author", source, doc).ownText(),
                             cleanWithNewlines(parseAlternatives("content", source, doc)),
                             url,
                             source);
@@ -174,20 +174,20 @@ public class LyricsClient
         }
     }
 
-    private String parseAlternatives(String key, String source, Document doc)
+    private Element parseAlternatives(String key, String source, Document doc)
     {
         List<String> titleSelectors = config.getStringList("lyrics." + source + ".parse." + key);
         for (String selector : titleSelectors)
         {
             Element element = doc.selectFirst(selector);
             if (element != null)
-                return element.ownText();
+                return element;
         }
         return null;
     }
 
-    private String cleanWithNewlines(String element)
+    private String cleanWithNewlines(Element element)
     {
-        return Jsoup.clean(Jsoup.clean(element, newlineWhitelist), "", Whitelist.none(), noPrettyPrint);
+        return Jsoup.clean(Jsoup.clean(element.html(), newlineWhitelist), "", Whitelist.none(), noPrettyPrint);
     }
 }
