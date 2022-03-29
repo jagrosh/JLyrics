@@ -1,4 +1,4 @@
-[![Download](https://api.bintray.com/packages/jagrosh/maven/JLyrics/images/download.svg)](https://bintray.com/jagrosh/maven/JLyrics/_latestVersion)
+[![Download](https://jitpack.io/v/jagrosh/JLyrics.svg)](https://jitpack.io/#jagrosh/JLyrics/master-SNAPSHOT)
 [![Stars](https://img.shields.io/github/stars/jagrosh/JLyrics.svg)](https://github.com/jagrosh/JLyrics/stargazers)
 [![License](https://img.shields.io/github/license/jagrosh/JLyrics.svg)](https://github.com/jagrosh/JLyrics/blob/master/LICENSE)
 [![CodeFactor](https://www.codefactor.io/repository/github/jagrosh/jlyrics/badge)](https://www.codefactor.io/repository/github/jagrosh/jlyrics)
@@ -29,16 +29,15 @@ System.out.println(lyrics.getContent()); // As he came into the window ...
 ## Maven Setup
 ```xml
 <repository>
-    <id>central</id>
-    <name>bintray</name>
-    <url>http://jcenter.bintray.com</url>
+		  <id>jitpack.io</id>
+	   <url>https://jitpack.io</url>
 </repository>
 ```
 
 ```xml
 <dependency>
-    <groupId>com.jagrosh</groupId>
-    <artifactId>JLyrics</artifactId>
-    <version>VERSION</version>
+	   <groupId>com.github.jagrosh</groupId>
+	   <artifactId>JLyrics</artifactId>
+	   <version>master-SNAPSHOT</version>
 </dependency>
 ```
