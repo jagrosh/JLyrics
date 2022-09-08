@@ -31,7 +31,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Document.OutputSettings;
 import org.jsoup.nodes.Element;
-import org.jsoup.safety.Whitelist;
+import org.jsoup.safety.Safelist;
 
 /**
  *
@@ -42,7 +42,7 @@ public class LyricsClient
     private final Config config = ConfigFactory.load();
     private final HashMap<String, Lyrics> cache = new HashMap<>();
     private final OutputSettings noPrettyPrint = new OutputSettings().prettyPrint(false);
-    private final Whitelist newlineWhitelist = Whitelist.none().addTags("br", "p");
+    private final Safelist newlineSafelist = Safelist.none().addTags("br", "p");
     private final Executor executor;
     private final String defaultSource, userAgent;
     private final int timeout;
@@ -178,6 +178,6 @@ public class LyricsClient
     
     private String cleanWithNewlines(Element element)
     {
-        return Jsoup.clean(Jsoup.clean(element.html(), newlineWhitelist), "", Whitelist.none(), noPrettyPrint);
+        return Jsoup.clean(Jsoup.clean(element.html(), newlineSafelist), "", Safelist.none(), noPrettyPrint);
     }
 }
