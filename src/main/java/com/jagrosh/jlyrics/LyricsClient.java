@@ -23,6 +23,9 @@ import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
@@ -122,49 +125,60 @@ public class LyricsClient
             return CompletableFuture.completedFuture(cache.get(cacheKey));
         try
         {
-            String searchUrl = String.format(config.getString("lyrics." + source + ".search.url"), search);
+            CompletableFuture<String> futureToken;
             boolean jsonSearch = config.getBoolean("lyrics." + source + ".search.json");
             String select = config.getString("lyrics." + source + ".search.select");
             String titleSelector = config.getString("lyrics." + source + ".parse.title");
             String authorSelector = config.getString("lyrics." + source + ".parse.author");
             String contentSelector = config.getString("lyrics." + source + ".parse.content");
-            return CompletableFuture.supplyAsync(() -> 
-            {
-                try
+
+            if (config.hasPath("lyrics." + source + ".token")) {
+                futureToken = getToken(source);
+            } else {
+                futureToken = CompletableFuture.completedFuture("");
+            }
+
+            return futureToken.thenCompose(token -> {
+                String searchUrl = String.format(config.getString("lyrics." + source + ".search.url"), search, token);
+
+                return CompletableFuture.supplyAsync(() ->
                 {
-                    Document doc;
-                    Connection connection = Jsoup.connect(searchUrl).userAgent(userAgent).timeout(timeout);
-                    if(jsonSearch)
+                    try
                     {
-                        String body = connection.ignoreContentType(true).execute().body();
-                        JSONObject json = new JSONObject(body);
-                        doc = Jsoup.parse(XML.toString(json));
+                        Document doc;
+                        Connection connection = Jsoup.connect(searchUrl).userAgent(userAgent).timeout(timeout);
+                        if(jsonSearch)
+                        {
+                            String body = connection.ignoreContentType(true).execute().body();
+                            JSONObject json = new JSONObject(body);
+                            doc = Jsoup.parse(XML.toString(json));
+                        }
+                        else
+                            doc = connection.get();
+
+                        Element urlElement = doc.selectFirst(select);
+                        String url;
+                        if(jsonSearch)
+                            url = urlElement.text();
+                        else
+                            url = urlElement.attr("abs:href");
+                        if(url==null || url.isEmpty())
+                            return null;
+                        doc = Jsoup.connect(url).userAgent(userAgent).timeout(timeout).get();
+                        Lyrics lyrics = new Lyrics(doc.selectFirst(titleSelector).ownText(),
+                                doc.selectFirst(authorSelector).ownText(),
+                                cleanWithNewlines(doc.selectFirst(contentSelector)),
+                                url,
+                                source);
+                        cache.put(cacheKey, lyrics);
+                        return lyrics;
                     }
-                    else
-                        doc = connection.get();
-                    
-                    Element urlElement = doc.selectFirst(select);
-                    String url;
-                    if(jsonSearch)
-                        url = urlElement.text();
-                    else
-                        url = urlElement.attr("abs:href");
-                    if(url==null || url.isEmpty())
+                    catch(IOException | NullPointerException | JSONException ex)
+                    {
                         return null;
-                    doc = Jsoup.connect(url).userAgent(userAgent).timeout(timeout).get();
-                    Lyrics lyrics = new Lyrics(doc.selectFirst(titleSelector).ownText(), 
-                            doc.selectFirst(authorSelector).ownText(), 
-                            cleanWithNewlines(doc.selectFirst(contentSelector)),
-                            url,
-                            source);
-                    cache.put(cacheKey, lyrics);
-                    return lyrics;
-                }
-                catch(IOException | NullPointerException | JSONException ex)
-                {
-                    return null;
-                }
-            }, executor);
+                    }
+                }, executor);
+            });
         }
         catch(ConfigException ex)
         {
@@ -175,7 +189,53 @@ public class LyricsClient
             return null;
         }
     }
-    
+
+    private CompletableFuture<String> getToken(String source) {
+        try {
+            String tokenUrl = config.getString("lyrics." + source + ".token.url");
+            String select = config.getString("lyrics." + source + ".token.select");
+            boolean textSearch = config.getBoolean("lyrics." + source + ".token.text");
+
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    Pattern pattern = null;
+
+                    // Optional regex for post-processing
+                    // Helpful if token is not accessible using HTML accessors (e.g, inlined in a JS file)
+                    if (config.hasPath("lyrics." + source + ".token.regex")) {
+                        String regexPattern = config.getString("lyrics." + source + ".token.regex");
+                        pattern = Pattern.compile(regexPattern);
+                    }
+
+                    Connection connection = Jsoup.connect(tokenUrl).userAgent(userAgent).timeout(timeout);
+                    String body;
+
+                    if (textSearch) {
+                        body = connection.ignoreContentType(true).execute().body();
+                    } else {
+                        // HTML -- apply selectors to derive body string
+                        Document doc = connection.get();
+                        body = doc.selectFirst(select).ownText();
+                    }
+
+                    if (pattern != null) {
+                        Matcher matcher = pattern.matcher(body);
+                        if (matcher.find()) {
+                            return matcher.group();
+                        }
+                    }
+                    return null;
+                } catch (IOException | NullPointerException ex) {
+                    return null;
+                }
+            }, executor);
+        } catch (ConfigException ex) {
+            throw new IllegalArgumentException(String.format("Source '%s' does not exist or is not configured correctly", source));
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
     private String cleanWithNewlines(Element element)
     {
         return Jsoup.clean(Jsoup.clean(element.html(), newlineSafelist), "", Safelist.none(), noPrettyPrint);
