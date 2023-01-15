@@ -164,7 +164,7 @@ public class LyricsClient
                             url = urlElement.attr("abs:href");
                         if(url==null || url.isEmpty())
                             return null;
-                        doc = Jsoup.connect(url).userAgent(userAgent).timeout(timeout).get();
+                        doc = Jsoup.connect(url).userAgent(userAgent).timeout(timeout).get().outputSettings(noPrettyPrint);
                         Lyrics lyrics = new Lyrics(doc.selectFirst(titleSelector).ownText(),
                                 doc.selectFirst(authorSelector).ownText(),
                                 cleanWithNewlines(doc.selectFirst(contentSelector)),
@@ -238,6 +238,6 @@ public class LyricsClient
 
     private String cleanWithNewlines(Element element)
     {
-        return Jsoup.clean(Jsoup.clean(element.html(), newlineSafelist), "", Safelist.none(), noPrettyPrint);
+        return Jsoup.clean(Jsoup.clean(element.html(), "", newlineSafelist, noPrettyPrint).replace("<p>", "\n"), "", Safelist.none(), noPrettyPrint).trim();
     }
 }
